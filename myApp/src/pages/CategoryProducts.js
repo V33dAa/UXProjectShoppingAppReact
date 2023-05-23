@@ -1,4 +1,4 @@
-import { IonBadge, IonButton, IonButtons, IonCol, IonContent, IonGrid, IonHeader, IonIcon, IonInfiniteScroll, IonInfiniteScrollContent, IonNote, IonPage, IonRow, IonSearchbar, IonTitle, IonToolbar } from "@ionic/react";
+import { IonBadge, IonButton, IonButtons, IonCol, IonContent, IonGrid, IonHeader, IonIcon, IonInfiniteScroll, IonInfiniteScrollContent, IonMenu, IonNote, IonPage, IonRow, IonSearchbar, IonTitle, IonToolbar, IonSelect, IonSelectOption } from "@ionic/react";
 import { cart, chevronBackOutline, searchOutline } from "ionicons/icons";
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router"
@@ -18,6 +18,8 @@ const CategoryProducts = () => {
     const [ category, setCategory ] = useState({});
     const [ searchResults, setsearchResults ] = useState([]);
     const [ amountLoaded, setAmountLoaded ] = useState(6);
+    const [sortValue, setSortValue] = useState("");
+
 
     useEffect(() => {
 
@@ -48,6 +50,32 @@ const CategoryProducts = () => {
         }
     }
 
+    const sort = (e) => {
+
+        const sortVal = e.target.value;
+        setSortValue(sortVal)
+        let sortResults = [...searchResults];
+
+        if (sortVal === "A->Z") {
+            sortResults.sort((a,b) => a.name.localeCompare(b.name));
+            
+        } else if (sortVal === "Z->A") {
+            sortResults.sort((a,b) => b.name.localeCompare(a.name));
+            
+        } else if (sortVal === "Price (low to high)") {
+            sortResults.sort((a,b) => {
+                return parseFloat(a.price.replace(/[^0-9.-]+/g, "")) - parseFloat(b.price.replace(/[^0-9.-]+/g, ""));
+            });
+            
+        } else if (sortVal === "Price (high to low)") {
+            sortResults.sort((a,b) => {
+                return parseFloat(b.price.replace(/[^0-9.-]+/g, "")) - parseFloat(a.price.replace(/[^0-9.-]+/g, ""));
+            });
+        }
+
+        setsearchResults(sortResults);
+    };
+
     return (
 
         <IonPage id="category-page" className={ styles.categoryPage }>
@@ -75,6 +103,16 @@ const CategoryProducts = () => {
 
                 <IonSearchbar className={ styles.search } onKeyUp={ search } placeholder="Try 'high back'" searchIcon={ searchOutline } animated={ true } />
 
+                <IonSelect value={sortValue} onIonChange={sort} placeholder="Select sorter">
+                    <IonSelectOption value="A->Z">A to Z</IonSelectOption>
+                    <IonSelectOption value="Z->A">Z to A</IonSelectOption>
+                    <IonSelectOption value="Price (low to high)">Price (low to high)</IonSelectOption>
+                    <IonSelectOption value="Price (high to low)">Price (high to low)</IonSelectOption>
+                </IonSelect>
+
+
+                 
+
                 <IonGrid>
 
                     <IonRow className="ion-text-center">
@@ -88,7 +126,13 @@ const CategoryProducts = () => {
 
                             if ((index <= amountLoaded) && product.image) {
                                 return (
-                                    <ProductCard key={ `category_product_${ index }`} product={ product } index={ index } cartRef={ cartRef } category={ category } />
+                                    <ProductCard
+                                        key={ `category_product_${ index }`}
+                                        product={ product }
+                                        index={ index }
+                                        cartRef={ cartRef }
+                                        category={ category }
+                                    />
                                 );
                             }
                         })}
