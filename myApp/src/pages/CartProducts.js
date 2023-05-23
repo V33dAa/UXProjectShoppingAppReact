@@ -14,6 +14,17 @@ const CartProducts = () => {
     const [ cartProducts, setCartProducts ] = useState([]);
     const [ amountLoaded, setAmountLoaded ] = useState(6);
 
+    const productsListed = new Map();
+
+    for (let i = 0; i < shopCart.length; i++) {
+        if (!productsListed.has(shopCart[i])) {
+            productsListed.set(shopCart[i], 1);
+        }
+        else {
+            productsListed.set(shopCart[i], productsListed.get(shopCart[i]) + 1);
+        }
+    }
+
     const [ total, setTotal ] = useState(0);
 
     useEffect(() => {
@@ -58,6 +69,20 @@ const CartProducts = () => {
         removeFromCart(index);
     }
 
+    function countOccurrences(value) {
+        let count = 0;
+        for (let i = 0; i < shopCart.length; i++) {
+          if (shopCart[i] === value) {
+            count++;
+          }
+        }
+        return count;
+    }
+
+    function convertToNumber(variable) {
+        return Number(variable.toString().replace(/[^0-9.-]+/g,""));
+    }
+
     return (
 
         <IonPage id="category-page" className={ styles.categoryPage }>
@@ -90,9 +115,11 @@ const CartProducts = () => {
                     </IonRow>
 
                     <IonList>
-                        { cartProducts && cartProducts.map((product, index) => {
+                        { cartProducts && cartProducts.map((product, index) => {                       
 
-                            if ((index <= amountLoaded)) {
+                            if ((index <= amountLoaded && !productsListed.has(product.product.name))) {
+                                productsListed.set(product.product.name, 1);
+                                let count = countOccurrences(shopCart[index]);
                                 return (
                                 <IonItemSliding className={ styles.cartSlider }>
                                     <IonItem key={ index } lines="none" detail={ false } className={ styles.cartItem }>
@@ -102,11 +129,12 @@ const CartProducts = () => {
                                         </IonAvatar>
                                         <IonLabel className="ion-padding-start ion-text-wrap">
                                             <p>{ product.category.name }</p>
-                                            <h4>{ product.product.name }</h4>
+                                            <h4>{ product.product.name + " x " + count }</h4>
+                                            
                                         </IonLabel>
 
                                         <div className={ styles.cartActions }>
-                                            <IonBadge color="dark">{ product.product.price }</IonBadge>
+                                            <IonBadge color="dark">{"£" + (convertToNumber(product.product.price) * count).toFixed(2) }</IonBadge>
                                         </div>
                                     </IonItem>
 
@@ -117,8 +145,11 @@ const CartProducts = () => {
                                     </IonItemOptions>
                                 </IonItemSliding>
                                 );
+                                
                             }
+                            //productsListed.set(product.product.name, productsListed.get(product.product.name) + 1);
                         })}
+                        
                     </IonList>
             </IonContent>
 
