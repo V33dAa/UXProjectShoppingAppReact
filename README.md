@@ -1,0 +1,1 @@
+When running app there may be compilation errors when you open the page but you can view the page by clicking the X icon in the top right and the app functions as it should.
